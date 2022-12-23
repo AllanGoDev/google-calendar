@@ -5,7 +5,7 @@
 ### Passo a passo
 Clone Repositório
 ```sh
-git clone https://github.com/especializati/setup-docker-laravel.git my-project
+git clone https://github.com/allanMilani/google-calendar.git my-project
 ```
 
 Crie o Arquivo .env
