@@ -6,7 +6,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        # image: especializati/laravel9-app
+        # image: allanmilani/google-calendar-app
         restart: unless-stopped
         working_dir: /var/www/
         volumes:
