@@ -17,16 +17,18 @@ class UserController extends Controller
         }
 
         $request->validate([
-            'key-google' => 'required|string'
+            'client-id' => 'required|string',
+            'api-key' => 'required|string'
         ]);
 
         try {
             User::where('id', $user->id)
                 ->update([
-                    'key_google' => $request->get('key-google')
+                    'client_id' => $request->get('client-id'),
+                    'api_key' => $request->get('api-key'),
                 ]);
             return response([
-                'message' => 'Key Google saved successfully',
+                'message' => 'Keys Google saved successfully',
             ], 201);
         } catch (Throwable $e) {
             return response([

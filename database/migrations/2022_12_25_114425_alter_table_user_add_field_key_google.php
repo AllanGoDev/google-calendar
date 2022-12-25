@@ -14,7 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('key_google')->nullable();
+            $table->string('client_id')->nullable();
+            $table->string('api_key')->nullable();
         });
     }
 
@@ -26,7 +27,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('key_google');
+            $table->dropColumn(['api_key', 'client_id']);
         });
     }
 };
