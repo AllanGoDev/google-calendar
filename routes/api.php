@@ -1,7 +1,10 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoogleAccountController;
+use App\Http\Controllers\GoogleCredentialsController;
+use App\Http\Controllers\PassportAuthController;
 use App\Http\Controllers\UserController;
+use App\Models\GoogleAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,14 +19,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('/register', [PassportAuthController::class, 'register']);
+Route::post('/login', [PassportAuthController::class, 'login']);
+Route::post('/logout', [PassportAuthController::class, 'logout']);
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::get('google/login/url', [GoogleAccountController::class, 'getAuthUrl']);
+    Route::post('google/auth/login', [GoogleAccountController::class, 'postLogin']);
+    Route::get('google/calendar', [GoogleAccountController::class, 'getDrive']);
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/savedKeyGoogle', [UserController::class, 'savedKeyGoogle']);
+    /** Credenciais */
+    Route::post('google/register-key', [GoogleCredentialsController::class, 'createCredential']);
+    Route::get('google/list-keys', [GoogleCredentialsController::class, 'listCredentials']);
+    Route::put('google/update-key/{id}', [GoogleCredentialsController::class, 'updateCredential']);
+    Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
 });
