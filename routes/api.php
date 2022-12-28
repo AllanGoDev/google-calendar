@@ -23,9 +23,12 @@ Route::post('/register', [PassportAuthController::class, 'register']);
 Route::post('/login', [PassportAuthController::class, 'login']);
 Route::post('/logout', [PassportAuthController::class, 'logout']);
 
+/** Login Oauth */
+Route::get('google/oauth', [GoogleAccountController::class, 'getAuth']);
+Route::post('google/auth/login', [GoogleAccountController::class, 'getAuth']);
+Route::get('google/login/url', [GoogleAccountController::class, 'getAuthUrl']);
+
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::get('google/login/url', [GoogleAccountController::class, 'getAuthUrl']);
-    Route::post('google/auth/login', [GoogleAccountController::class, 'postLogin']);
     Route::get('google/calendar', [GoogleAccountController::class, 'getDrive']);
 
     /** Credenciais */
@@ -33,4 +36,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('google/list-keys', [GoogleCredentialsController::class, 'listCredentials']);
     Route::put('google/update-key/{id}', [GoogleCredentialsController::class, 'updateCredential']);
     Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
+
+    /** Agenda google */
+    // Route::post('google/list-events', GoogleAccountController::class, 'listEvents');
 });
