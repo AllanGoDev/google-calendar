@@ -3,6 +3,7 @@
 use App\Http\Controllers\GoogleAccountController;
 use App\Http\Controllers\GoogleColorsController;
 use App\Http\Controllers\GoogleCredentialsController;
+use App\Http\Controllers\GoogleEventsController;
 use App\Http\Controllers\PassportAuthController;
 use App\Http\Controllers\UserController;
 use App\Models\GoogleAccount;
@@ -39,7 +40,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
 
     /** Agenda google */
-    Route::post('google/events/list', [GoogleAccountController::class, 'listEvents']);
+    Route::post('google/events/list', [GoogleEventsController::class, 'listEvents']);
+    Route::post('google/events/show', [GoogleEventsController::class, 'showEvent']);
 
     /** Cores */
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
