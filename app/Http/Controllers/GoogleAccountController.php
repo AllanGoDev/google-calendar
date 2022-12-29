@@ -3,40 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoogleAccount as GoogleAccount;
+use App\Models\GoogleCredentials;
 use App\Models\User;
 use App\Services\Google;
+use App\Services\GoogleClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class GoogleAccountController extends Controller
 {
-    private function getClient(): \Google_Client
+    private $googleClient;
+
+    public function __construct()
     {
-        $configJson = base_path() . '/config.json';
-
-        $applicationName = 'IntegrationGoogleCalendar';
-
-        $client = new \Google_Client();
-        $client->setApplicationName($applicationName);
-        $client->setAuthConfig($configJson);
-        $client->setAccessType('offline');
-        $client->setApprovalPrompt('force');
-
-        $client->setScopes([
-            \Google\Service\Oauth2::USERINFO_PROFILE,
-            \Google\Service\Oauth2::USERINFO_EMAIL,
-            \Google\Service\Oauth2::OPENID,
-            \Google\Service\Calendar::CALENDAR,
-        ]);
-
-        $client->setIncludeGrantedScopes(true);
-        return $client;
+        $this->googleClient = new GoogleClient();
     }
 
     public function getAuthUrl(Request $request): JsonResponse
     {
 
-        $client = $this->getClient();
+        $client = $this->googleClient->getClient();
 
         $authUrl = $client->createAuthUrl();
 
@@ -49,7 +35,7 @@ class GoogleAccountController extends Controller
     {
         $authCode = urldecode($request->input('code'));
 
-        $client = $this->getClient();
+        $client = $this->googleClient->getClient();
 
         $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
 
@@ -82,30 +68,11 @@ class GoogleAccountController extends Controller
         ], 201);
     }
 
-    private function getUserClient(): \Google_Client
-    {
-        $user = User::where('id', '=', auth()->user()->id)->first();
 
-        $accessTokenJson = stripslashes($user->google_access_token_json);
-
-        $client = $this->getClient();
-
-        $client->setAccessToken($accessTokenJson);
-
-        if ($client->isAccessTokenExpired()) {
-            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-            $client->setAccessToken($client->getAccessToken());
-
-            $user->google_access_token_json = json_encode($client->getAccessToken());
-            $user->save();
-        }
-
-        return $client;
-    }
 
     public function getDrive(Request $request): JsonResponse
     {
-        $client = $this->getUserClient();
+        $client = $this->googleClient->getUserClient();
 
         $service = new \Google\Service\Calendar($client);
 
@@ -116,5 +83,30 @@ class GoogleAccountController extends Controller
         $result = $service->events->listEvents($parameters['calendarId']);
 
         return response()->json($result->getItems(), 200);
+    }
+
+    public function listEvents(Request $request): JsonResponse
+    {
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        if (!empty($request->only('credential_id'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credential_id'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        $colors = $service->colors->get();
+        dd($colors->getEvent());
+
+        $result = $service->events->listEvents(@$credential->google_calendar_id);
+
+        return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
     }
 }

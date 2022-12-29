@@ -38,5 +38,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
 
     /** Agenda google */
-    // Route::post('google/list-events', GoogleAccountController::class, 'listEvents');
+    Route::post('google/events/list', [GoogleAccountController::class, 'listEvents']);
+
+    /** Cores */
 });
