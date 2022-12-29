@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('client_id')->nullable();
-            $table->string('api_key')->nullable();
+        Schema::table('google_colors', function (Blueprint $table) {
+            $table->integer('created_by')->unsigned()->nullable();
+            $table->foreign('created_by')->references('id')->on('users');
         });
     }
 
@@ -26,8 +26,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['api_key', 'client_id']);
+        Schema::table('google_colors', function (Blueprint $table) {
+            $table->dropForeign(['created_by']);
         });
     }
 };

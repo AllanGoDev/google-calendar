@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'provider_id',
+        'provider_name',
+        'google_access_token_json',
     ];
 
     /**
@@ -41,4 +44,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function google_credentials()
+    {
+        return $this->hasMany('App\Models\GoogleCredentials');
+    }
+
+    public function google_colors()
+    {
+        return $this->hasMany('App\Models\GoogleColors');
+    }
 }
