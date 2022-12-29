@@ -49,4 +49,9 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Models\GoogleCredentials');
     }
+
+    public function google_colors()
+    {
+        return $this->hasMany('App\Models\GoogleColors');
+    }
 }

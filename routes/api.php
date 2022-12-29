@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GoogleAccountController;
+use App\Http\Controllers\GoogleColorsController;
 use App\Http\Controllers\GoogleCredentialsController;
 use App\Http\Controllers\PassportAuthController;
 use App\Http\Controllers\UserController;
@@ -41,4 +42,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('google/events/list', [GoogleAccountController::class, 'listEvents']);
 
     /** Cores */
+    Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
+    Route::get('google/colors/list', [GoogleColorsController::class, 'listColors']);
+    Route::put('google/colors/update/{id}', [GoogleColorsController::class, 'updateColors']);
 });
