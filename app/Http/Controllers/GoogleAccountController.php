@@ -7,6 +7,8 @@ use App\Models\GoogleCredentials;
 use App\Models\User;
 use App\Services\Google;
 use App\Services\GoogleClient;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -68,8 +70,6 @@ class GoogleAccountController extends Controller
         ], 201);
     }
 
-
-
     public function getDrive(Request $request): JsonResponse
     {
         $client = $this->googleClient->getUserClient();
@@ -83,30 +83,5 @@ class GoogleAccountController extends Controller
         $result = $service->events->listEvents($parameters['calendarId']);
 
         return response()->json($result->getItems(), 200);
-    }
-
-    public function listEvents(Request $request): JsonResponse
-    {
-        $client = $this->googleClient->getUserClient();
-
-        $service = new \Google\Service\Calendar($client);
-
-        if (!empty($request->only('credential_id'))) {
-            $credential = GoogleCredentials::where([
-                'id' => $request->only('credential_id'),
-                'user_id' => auth()->user()->id
-            ])->first();
-        } else {
-            $credential = GoogleCredentials::where([
-                'user_id' => auth()->user()->id
-            ])->first();
-        }
-
-        $colors = $service->colors->get();
-        dd($colors->getEvent());
-
-        $result = $service->events->listEvents(@$credential->google_calendar_id);
-
-        return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
     }
 }
