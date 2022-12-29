@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('background')->nullable();
             $table->string('foreground')->nullable();
             $table->text('description')->nullable();
-            $table->string('status');
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }
