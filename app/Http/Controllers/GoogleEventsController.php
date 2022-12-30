@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GoogleCredentials;
 use App\Services\GoogleClient;
 use DateTime;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -45,9 +46,9 @@ class GoogleEventsController extends Controller
 
         $service = new \Google\Service\Calendar($client);
 
-        if (!empty($request->only('credential_id'))) {
+        if (!empty($request->only('credentialId'))) {
             $credential = GoogleCredentials::where([
-                'id' => $request->only('credential_id'),
+                'id' => $request->only('credentialId'),
                 'user_id' => auth()->user()->id
             ])->first();
         } else {
@@ -73,9 +74,9 @@ class GoogleEventsController extends Controller
 
         $service = new \Google\Service\Calendar($client);
 
-        if (!empty($request->only('credential_id'))) {
+        if (!empty($request->only('credentialId'))) {
             $credential = GoogleCredentials::where([
-                'id' => $request->only('credential_id'),
+                'id' => $request->only('credentialId'),
                 'user_id' => auth()->user()->id
             ])->first();
         } else {
@@ -87,5 +88,163 @@ class GoogleEventsController extends Controller
         $result = $service->events->get(@$credential->google_calendar_id, $request->eventId);
 
         return response()->json($result, 200, [], JSON_UNESCAPED_SLASHES);
+    }
+
+    public function removeEvent(Request $request)
+    {
+        if (empty($request->eventId)) {
+            return response()->json([
+                'message' => 'No event id provided'
+            ], 400);
+        }
+
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        if (!empty($request->only('credentialId'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credentialId'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        try {
+            $service->events->delete(@$credential->google_calendar_id, $request->eventId);
+            return response()->json([
+                'message' => 'Event removed successfully'
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([], 200, [
+                'message' => $e->getMessage(),
+                'stack' => $e->getTrace()
+            ], JSON_UNESCAPED_SLASHES);
+        }
+    }
+
+    public function createEvent(Request $request)
+    {
+        $eventData = $request->all();
+
+        if (empty($eventData)) {
+            return response()->json([
+                'message' => 'Please enter the creation data'
+            ], 400);
+        }
+
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        $event = new \Google\Service\Calendar\Event($eventData);
+
+        if (!empty($request->only('credentialId'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credentialId'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        $result = $service->events->insert(@$credential->google_calendar_id, $event);
+
+        if (empty(@$result->htmlLink)) {
+            return response()->json([
+                'message' => 'Ops, check the data and try again',
+            ], 200, [], JSON_UNESCAPED_SLASHES);
+        }
+
+        return response()->json([
+            'message' => 'successfully created event',
+            'event' => $result
+        ]);
+    }
+
+    public function updateEvent(Request $request)
+    {
+        if (empty($request->eventId)) {
+            return response()->json([
+                'message' => 'No event id provided'
+            ], 400);
+        }
+
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        if (!empty($request->only('credentialId'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credentialId'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        $eventData = $request->all();
+
+        if (!empty($eventData['eventId'])) unset($eventData['eventId']);
+
+        if (!empty($eventData['credentialId'])) unset($eventData['credentialId']);
+
+        if (empty($eventData)) {
+            return response()->json([
+                'message' => 'Please enter the update fields'
+            ], 400);
+        }
+
+        $event = $service->events->get(@$credential->google_calendar_id, $request->eventId);
+
+        foreach ($eventData as $key => $value) {
+            $set = 'set' . ucfirst($key);
+            $dado = $value;
+            switch ($key) {
+                case 'start':
+                    $dado = new \Google\Service\Calendar\EventDateTime($value);
+                    break;
+                case 'end':
+                    $dado = new \Google\Service\Calendar\EventDateTime($value);
+                    break;
+                case 'reminders':
+                    $dado = new \Google\Service\Calendar\EventReminders($value);
+                    break;
+                case 'extendedProperties':
+                    $dado = new \Google\Service\Calendar\EventExtendedProperties($value);
+                    break;
+                case 'gadget':
+                    $dado = new \Google\Service\Calendar\EventGadget($value);
+                    break;
+                case 'originalStartTime':
+                    $dado = new \Google\Service\Calendar\EventDateTime($value);
+                    break;
+                case 'source':
+                    $dado = new \Google\Service\Calendar\EventSource($value);
+                    break;
+            }
+
+            $event->$set($dado);
+        }
+
+        $eventUpdated = $service->events->update(@$credential->google_calendar_id, $event->getId(), $event);
+
+        if (empty(@$eventUpdated)) {
+            return response()->json([
+                'message' => 'Ops, check the data and try again',
+            ], 200, [], JSON_UNESCAPED_SLASHES);
+        }
+
+        return response()->json([
+            'message' => 'successfully updated event',
+            'event' => $eventUpdated
+        ]);
     }
 }
