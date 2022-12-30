@@ -31,13 +31,11 @@ Route::post('google/auth/login', [GoogleAccountController::class, 'getAuth']);
 Route::get('google/login/url', [GoogleAccountController::class, 'getAuthUrl']);
 
 Route::group(['middleware' => 'auth:api'], function () {
-    Route::get('google/calendar', [GoogleAccountController::class, 'getDrive']);
-
     /** Credenciais */
-    Route::post('google/register-key', [GoogleCredentialsController::class, 'createCredential']);
-    Route::get('google/list-keys', [GoogleCredentialsController::class, 'listCredentials']);
-    Route::put('google/update-key/{id}', [GoogleCredentialsController::class, 'updateCredential']);
-    Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
+    Route::post('google/credentials/register-key', [GoogleCredentialsController::class, 'createCredential']);
+    Route::get('google/credentials/list-keys', [GoogleCredentialsController::class, 'listCredentials']);
+    Route::put('google/credentials/update-key', [GoogleCredentialsController::class, 'updateCredential']);
+    Route::delete('google/credentials/delete-key', [GoogleCredentialsController::class, 'deleteCredential']);
 
     /** Agenda google */
     Route::get('google/events/list', [GoogleEventsController::class, 'listEvents']);
@@ -49,5 +47,5 @@ Route::group(['middleware' => 'auth:api'], function () {
     /** Cores */
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
     Route::get('google/colors/list', [GoogleColorsController::class, 'listColors']);
-    Route::put('google/colors/update/{id}', [GoogleColorsController::class, 'updateColors']);
+    Route::put('google/colors/update', [GoogleColorsController::class, 'updateColors']);
 });
