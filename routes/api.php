@@ -40,8 +40,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('google/delete-key/{id}', [GoogleCredentialsController::class, 'deleteCredential']);
 
     /** Agenda google */
-    Route::post('google/events/list', [GoogleEventsController::class, 'listEvents']);
-    Route::post('google/events/show', [GoogleEventsController::class, 'showEvent']);
+    Route::get('google/events/list', [GoogleEventsController::class, 'listEvents']);
+    Route::get('google/events/show', [GoogleEventsController::class, 'showEvent']);
+    Route::delete('google/events/remove', [GoogleEventsController::class, 'removeEvent']);
+    Route::post('google/events/create', [GoogleEventsController::class, 'createEvent']);
+    Route::put('google/events/update', [GoogleEventsController::class, 'updateEvent']);
 
     /** Cores */
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
