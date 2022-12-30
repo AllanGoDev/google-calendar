@@ -70,18 +70,18 @@ class GoogleAccountController extends Controller
         ], 201);
     }
 
-    public function getDrive(Request $request): JsonResponse
-    {
-        $client = $this->googleClient->getUserClient();
+    // public function getDrive(Request $request): JsonResponse
+    // {
+    //     $client = $this->googleClient->getUserClient();
 
-        $service = new \Google\Service\Calendar($client);
+    //     $service = new \Google\Service\Calendar($client);
 
-        $parameters = [
-            'calendarId' => "61d4f6dc3968c55272d4b8d05fffd836908c02249ff3e33e75af82864a651b76@group.calendar.google.com"
-        ];
+    //     $parameters = [
+    //         'calendarId' => "61d4f6dc3968c55272d4b8d05fffd836908c02249ff3e33e75af82864a651b76@group.calendar.google.com"
+    //     ];
 
-        $result = $service->events->listEvents($parameters['calendarId']);
+    //     $result = $service->events->listEvents($parameters['calendarId']);
 
-        return response()->json($result->getItems(), 200);
-    }
+    //     return response()->json($result->getItems(), 200);
+    // }
 }

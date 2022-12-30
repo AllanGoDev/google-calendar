@@ -89,18 +89,34 @@ class GoogleColorsController extends Controller
         ], 200);
     }
 
-    public function updateColors(Request $request, $id)
+    public function updateColors(Request $request)
     {
-        if (!$color = GoogleColors::where(['id' => $id])->first()) {
+        if (empty($request->colorId)) {
+            return response()->json([
+                'message' => 'Please enter credentialId'
+            ]);
+        }
+
+        if (!$color = GoogleColors::where(['id' => $request->colorId, 'created_by' => auth()->user()->id])->first()) {
             return response()->json([
                 'message' => 'Ops, an error occurred when performing the update'
             ]);
         }
 
-        $color->update($request->all());
+        $colorUpdated = $color->updateOrCreate(
+            [
+                'id' => $request->colorId,
+                'created_by' => auth()->user()->id
+            ],
+            array_merge(
+                $request->all(),
+                ['created_by' => auth()->user()->id]
+            )
+        );
 
         return response()->json([
-            'message' => 'Color successfully updated'
+            'message' => 'Color successfully updated',
+            'color' => $colorUpdated
         ], 201);
     }
 }

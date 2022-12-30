@@ -21,23 +21,23 @@ class GoogleCredentialsController extends Controller
         }
 
         $googleCredential = GoogleCredentials::create([
-            'google_calendar_id' => @$request->google_calendar_id ?: null,
-            'google_client_id' => @$request->google_client_id ?: null,
-            'google_client_secret' => @$request->google_client_secret ?: null,
-            'google_redirect_uri' => @$request->google_redirect_uri ?: null,
-            'google_webhook_uri' => @$request->google_webhook_uri ?: null,
+            'google_calendar_id' => @$request->googleCalendarId ?: null,
+            'google_client_id' => @$request->googleClientId ?: null,
+            'google_client_secret' => @$request->googleRedirectUri ?: null,
+            'google_redirect_uri' => @$request->googleWebhookUri ?: null,
+            'google_webhook_uri' => @$request->googleClientSecret ?: null,
             'user_id' => $user->id
         ]);
 
         return response()->json([
             'user' => $user,
             'credential' => $googleCredential
-        ], 200);
+        ], 200, [], JSON_UNESCAPED_SLASHES);
     }
 
     public function listCredentials(Request $request): JsonResponse
     {
-        $credentials = GoogleCredentials::with('user')
+        $credentials = GoogleCredentials::with('user:id,name,email,provider_id')
             ->where([
                 'user_id' => auth()->user()->id
             ])
@@ -50,27 +50,64 @@ class GoogleCredentialsController extends Controller
             ], 204);
         }
 
-        return response()->json(['credentials' => $credentials], 200);
+        return response()->json(['credentials' => $credentials], 200, [], JSON_UNESCAPED_SLASHES);
     }
 
-    public function updateCredential(Request $request, $id): JsonResponse
+    public function updateCredential(Request $request): JsonResponse
     {
-        if (!$credential = GoogleCredentials::where(['id' => $id])->first()) {
+
+        if (empty($request->credentialId)) {
+            return response()->json([
+                'message' => 'Please enter credentialId'
+            ]);
+        }
+
+        if (!$credential = GoogleCredentials::where(['id' => $request->credentialId])->first()) {
             return response()->json([
                 'message' => 'Ops, an error occurred when performing the update'
             ], 500);
         }
 
-        $credential->update($request->all());
+        $aDados = $request->all();
+        $aUpdated = [];
+
+        if (!empty($aDados['googleCalendarId']))
+            $aUpdated['google_calendar_id'] = $aDados['googleCalendarId'];
+
+        if (!empty($aDados['googleClientId']))
+            $aUpdated['google_client_id'] = $aDados['googleClientId'];
+
+        if (!empty($aDados['googleRedirectUri']))
+            $aUpdated['google_client_secret'] = $aDados['googleRedirectUri'];
+
+        if (!empty($aDados['googleWebhookUri']))
+            $aUpdated['google_redirect_uri'] = $aDados['googleWebhookUri'];
+
+        if (!empty($aDados['googleClientSecret']))
+            $aUpdated['google_webhook_uri'] = $aDados['googleClientSecret'];
+
+        $credentialUpdated = $credential->updateOrCreate(
+            [
+                'id' => $request->credentialId
+            ],
+            $aUpdated
+        );
 
         return response()->json([
-            'message' => 'Credential successfully updated'
-        ], 201);
+            'message' => 'Credential successfully updated',
+            'credential' => $credentialUpdated
+        ], 201, [], JSON_UNESCAPED_SLASHES);
     }
 
-    public function deleteCredential($id): JsonResponse
+    public function deleteCredential(Request $request): JsonResponse
     {
-        if (!$credential = GoogleCredentials::where(['id' => $id])->first()) {
+        if (empty($request->credentialId)) {
+            return response()->json([
+                'message' => 'Please enter credentialId'
+            ]);
+        }
+
+        if (!$credential = GoogleCredentials::where(['id' => $request->credentialId])->first()) {
             return response()->json([
                 'message' => 'The credential reported does not exist'
             ], 500);
@@ -80,6 +117,6 @@ class GoogleCredentialsController extends Controller
 
         return response()->json([
             'message' => 'Credential successfully deleted'
-        ], 201);
+        ], 201, [], JSON_UNESCAPED_SLASHES);
     }
 }

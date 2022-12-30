@@ -4,19 +4,24 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class PassportAuthController extends Controller
 {
     /** Registration */
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
         $this->validate($request, [
             'name' => 'required|min:4',
             'email' => 'required|email',
             'password' => 'required|min:8',
         ]);
+
+        if ($user = User::where(['email' => $request->email])->first()) {
+            return response()->json(['message' => 'User already exists']);
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -33,7 +38,7 @@ class PassportAuthController extends Controller
     /**
      * Login
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $data = [
             'email' => $request->email,
