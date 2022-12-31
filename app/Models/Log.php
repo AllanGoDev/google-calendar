@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Log extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'uuid',
+        'method',
+        'route',
+        'request_status',
+        'request_data',
+        'response_status',
+        'response_data',
+    ];
 }

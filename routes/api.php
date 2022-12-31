@@ -30,6 +30,8 @@ Route::get('google/oauth', [GoogleAccountController::class, 'getAuth']);
 Route::post('google/auth/login', [GoogleAccountController::class, 'getAuth']);
 Route::get('google/login/url', [GoogleAccountController::class, 'getAuthUrl']);
 
+Route::post('google/events/webhook', [GoogleEventsController::class, 'webhookEvent']);
+
 Route::group(['middleware' => 'auth:api'], function () {
     /** Credenciais */
     Route::post('google/credentials/register-key', [GoogleCredentialsController::class, 'createCredential']);
@@ -43,6 +45,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('google/events/remove', [GoogleEventsController::class, 'removeEvent']);
     Route::post('google/events/create', [GoogleEventsController::class, 'createEvent']);
     Route::put('google/events/update', [GoogleEventsController::class, 'updateEvent']);
+    Route::get('google/events/watch', [GoogleEventsController::class, 'watchEvent']);
 
     /** Cores */
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
