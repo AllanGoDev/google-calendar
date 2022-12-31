@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoogleCredentials;
+use App\Models\Log;
 use App\Services\GoogleClient;
 use DateTime;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Ramsey\Uuid\Uuid;
 
 class GoogleEventsController extends Controller
 {
@@ -119,10 +121,10 @@ class GoogleEventsController extends Controller
                 'message' => 'Event removed successfully'
             ], 201);
         } catch (Exception $e) {
-            return response()->json([], 200, [
+            return response()->json([
                 'message' => $e->getMessage(),
                 'stack' => $e->getTrace()
-            ], JSON_UNESCAPED_SLASHES);
+            ], 200, [], JSON_UNESCAPED_SLASHES);
         }
     }
 
@@ -246,5 +248,72 @@ class GoogleEventsController extends Controller
             'message' => 'successfully updated event',
             'event' => $eventUpdated
         ]);
+    }
+
+    public function watchEvent(Request $request): JsonResponse
+    {
+        if (empty($request->eventId)) {
+            return response()->json([
+                'message' => 'No event id provided'
+            ], 400);
+        }
+
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        if (!empty($request->only('credentialId'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credentialId'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        $body = new \Google\Service\Calendar\Channel([
+            'id' => $request->eventId,
+            'type' => 'webhook',
+            'address' => !(empty($request->googleWebhookUri)) ? $request->googleWebhookUri : @$credential->google_webhook_uri
+        ]);
+
+        $result = $service->events->watch(@$credential->google_calendar_id, $body);
+
+        if (!$result) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again'
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Event watch created successfully',
+            'result' => $result
+        ], 200);
+    }
+
+    public function webhookEvent(Request $request)
+    {
+        $url = $request->url();
+        $method = $request->method();
+
+        Log::create([
+            'uuid' => Uuid::uuid4(),
+            'method' => $method,
+            'route' => $url,
+            'response_data' => json_encode($request)
+        ]);
+
+        // $archive = fopen('response.txt', 'w');
+        // fwrite($archive, join("\n", [
+        //     'url: '  . $url,
+        //     'method: ' . $method,
+        //     $request
+        // ]));
+        // fclose($archive);
+        return response()->json([
+            'message' => 'Webhook event created successfully',
+        ], 200);
     }
 }
