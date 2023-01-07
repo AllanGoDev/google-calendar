@@ -20,6 +20,64 @@ class GoogleEventsController extends Controller
         $this->googleClient = new GoogleClient();
     }
 
+    /**
+     * @OA\Get(
+     *  path="api/google/events/list",
+     *  tags={"Eventos"},
+     *  summary="Lista Eventos",
+     *  description="A rota realiza a listagem de eventos associados ao usuário conectado",
+     *  operationId="listEvents",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=false
+     *  ),
+     *  @OA\Parameter(
+     *   description="Initial date filter",
+     *   in="path",
+     *   name="timeMin",
+     *   required=false,
+     *   example="2022-12-27 00:00:00"
+     *  ),
+     *  @OA\Parameter(
+     *   description="Finally date filter",
+     *   in="path",
+     *   name="timeMax",
+     *   required=false,
+     *   example="2022-12-30 00:00:00"
+     *  ),
+     *  @OA\Parameter(
+     *   description="Id Evento",
+     *   in="path",
+     *   name="iCalUID",
+     *   required=false,
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="The start date must be greater than the end date"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="[Lista com eventos]"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function listEvents(Request $request): JsonResponse
     {
         $filters = [];
@@ -64,6 +122,50 @@ class GoogleEventsController extends Controller
         return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Get(
+     *  path="google/events/show",
+     *  tags={"Eventos"},
+     *  summary="Lista um evento",
+     *  description="A rota realiza a exibição de um evento expecifico",
+     *  operationId="showEvent",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=false
+     *  ),
+     *  @OA\Parameter(
+     *   description="Id Evento",
+     *   in="path",
+     *   name="eventId",
+     *   required=true,
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="No event id provided"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="[Objecto do evento]"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function showEvent(Request $request)
     {
         if (empty($request->eventId)) {
@@ -92,6 +194,60 @@ class GoogleEventsController extends Controller
         return response()->json($result, 200, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Delete(
+     *  path="api/google/events/remove",
+     *  tags={"Eventos"},
+     *  summary="Deleta Credencial",
+     *  description="A rota realiza a deleção da credencial associada ao usuário",
+     *  operationId="removeEvent",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=false
+     *  ),
+     *  @OA\Parameter(
+     *   description="Id Evento",
+     *   in="path",
+     *   name="eventId",
+     *   required=true,
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="No event id provided"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=500,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=201,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="Event removed successfully"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function removeEvent(Request $request)
     {
         if (empty($request->eventId)) {
@@ -124,10 +280,46 @@ class GoogleEventsController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
                 'stack' => $e->getTrace()
-            ], 200, [], JSON_UNESCAPED_SLASHES);
+            ], 500, [], JSON_UNESCAPED_SLASHES);
         }
     }
 
+    /**
+     * @OA\Post(
+     *  path="api/google/events/create",
+     *  tags={"Eventos"},
+     *  summary="Cria um evento",
+     *  description="A rota realiza a criação de um evento na agenda do usuário conectado",
+     *  operationId="createEvent",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\RequestBody(
+     *   required=true,
+     *   description="User credentials config google",
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="Ops, check the data and try again"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="Successfully created event"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function createEvent(Request $request)
     {
         $eventData = $request->all();
@@ -160,15 +352,63 @@ class GoogleEventsController extends Controller
         if (empty(@$result->htmlLink)) {
             return response()->json([
                 'message' => 'Ops, check the data and try again',
-            ], 200, [], JSON_UNESCAPED_SLASHES);
+            ], 400, [], JSON_UNESCAPED_SLASHES);
         }
 
         return response()->json([
-            'message' => 'successfully created event',
+            'message' => 'Successfully created event',
             'event' => $result
         ]);
     }
 
+    /**
+     * @OA\Put(
+     *  path="api/google/events/update",
+     *  tags={"Eventos"},
+     *  summary="Atualiza um evento",
+     *  description="A rota realiza a criação de credenciais de configurações da integração",
+     *  operationId="createCredential",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=false
+     *  ),
+     *  @OA\Parameter(
+     *   description="Id do evento",
+     *   in="path",
+     *   name="eventId",
+     *   required=false
+     *  ),
+     * @OA\RequestBody(
+     *   required=true,
+     *   description="User credentials config google",
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="No event id provided"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="successfully updated event"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function updateEvent(Request $request)
     {
         if (empty($request->eventId)) {
@@ -241,7 +481,7 @@ class GoogleEventsController extends Controller
         if (empty(@$eventUpdated)) {
             return response()->json([
                 'message' => 'Ops, check the data and try again',
-            ], 200, [], JSON_UNESCAPED_SLASHES);
+            ], 400, [], JSON_UNESCAPED_SLASHES);
         }
 
         return response()->json([

@@ -1,0 +1,1274 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Integration Google Calendar",
+        "version": "0.0.1"
+    },
+    "paths": {
+        "/api/google/login/url": {
+            "get": {
+                "tags": [
+                    "Login Oauth"
+                ],
+                "summary": "Pegar url de login do oauth",
+                "description": "A rota realiza a geração de uma url utilizada para autenticar com oauth",
+                "operationId": "getAuthUrl",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "url": {
+                                            "type": "string",
+                                            "example": "https://accounts.google.com/o/oauth2/v2/auth?"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "google/auth/login": {
+            "post": {
+                "tags": [
+                    "Login Oauth"
+                ],
+                "summary": "Salvar credenciais de acesso oauth",
+                "description": "A rota salva as credenciais de acesso necessários para a comunicação com a google",
+                "operationId": "getAuth",
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "path",
+                        "description": "Codigo obtido no login realizado a partir da obtenção da url de login na rota /api/google/login/url",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Please enter the code"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BaseTokenGoogle"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/google/colors/import": {
+            "get": {
+                "tags": [
+                    "Cores"
+                ],
+                "summary": "Importar cores",
+                "description": "A rota realiza a importação das cores para a base de dados",
+                "operationId": "importColors",
+                "responses": {
+                    "201": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No colors to be imported"
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": "0"
+                                        },
+                                        "success": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    "",
+                                                    ""
+                                                ]
+                                            },
+                                            "collectionFormat": "multi"
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    "",
+                                                    ""
+                                                ]
+                                            },
+                                            "collectionFormat": "multi"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully imported colors"
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": "0"
+                                        },
+                                        "success": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    [
+                                                        "background",
+                                                        "foreground"
+                                                    ],
+                                                    [
+                                                        "background",
+                                                        "foreground"
+                                                    ]
+                                                ]
+                                            }
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "example": [
+                                                    [
+                                                        "background",
+                                                        "foreground"
+                                                    ],
+                                                    [
+                                                        "background",
+                                                        "foreground"
+                                                    ]
+                                                ]
+                                            },
+                                            "collectionFormat": "multi"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/colors/list": {
+            "get": {
+                "tags": [
+                    "Cores"
+                ],
+                "summary": "Lista as cores ",
+                "description": "A rota realiza a listagem das rotas importadas pelo usuário logado",
+                "operationId": "listColors",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GoogleColors"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/colors/update": {
+            "put": {
+                "tags": [
+                    "Cores"
+                ],
+                "summary": "Atualiza uma cor na base",
+                "description": "A rota realiza a atualização de uma cor já salva no banco",
+                "operationId": "updateColors",
+                "parameters": [
+                    {
+                        "name": "colorId",
+                        "in": "path",
+                        "description": "Id da cor na base",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Please enter credentialId"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ops, an error occurred when performing the update"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Color successfully updated"
+                                        },
+                                        "color": {
+                                            "$ref": "#/components/schemas/GoogleColors"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/credentials/register-key": {
+            "post": {
+                "tags": [
+                    "Credentials Google"
+                ],
+                "summary": "Cria credenciais de configuração",
+                "description": "A rota realiza a criação de credenciais de configurações da integração",
+                "operationId": "createCredential",
+                "requestBody": {
+                    "description": "User credentials config google",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "google_calendar_id": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "google_client_id": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "google_client_secret": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "google_redirect_uri": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "google_webhook_uri": {
+                                        "type": "string",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "credential": {
+                                            "$ref": "#/components/schemas/GoogleCredentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/credentials/list-keys": {
+            "get": {
+                "tags": [
+                    "Credentials Google"
+                ],
+                "summary": "Lista Credenciais",
+                "description": "A rota realiza a listagem de credenciais associados ao usuário conectado",
+                "operationId": "listCredentials",
+                "responses": {
+                    "204": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ops, no credentials registered"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GoogleCredentials"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/credentials/update-key": {
+            "put": {
+                "tags": [
+                    "Credentials Google"
+                ],
+                "summary": "Atualiza Credencial",
+                "description": "A rota realiza a atualização da credencial associada ao usuário",
+                "operationId": "updateCredential",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Please enter credentialId"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ops, an error occurred when performing the update"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Credential successfully updated"
+                                        },
+                                        "color": {
+                                            "$ref": "#/components/schemas/GoogleCredentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "google/credentials/delete-key": {
+            "delete": {
+                "tags": [
+                    "Credentials Google"
+                ],
+                "summary": "Deleta Credencial",
+                "description": "A rota realiza a deleção da credencial associada ao usuário",
+                "operationId": "deleteCredential",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Please enter credentialId"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The credential reported does not exist"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Credential successfully deleted"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/events/list": {
+            "get": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Lista Eventos",
+                "description": "A rota realiza a listagem de eventos associados ao usuário conectado",
+                "operationId": "listEvents",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": false
+                    },
+                    {
+                        "name": "timeMin",
+                        "in": "path",
+                        "description": "Initial date filter",
+                        "required": false,
+                        "example": "2022-12-27 00:00:00"
+                    },
+                    {
+                        "name": "timeMax",
+                        "in": "path",
+                        "description": "Finally date filter",
+                        "required": false,
+                        "example": "2022-12-30 00:00:00"
+                    },
+                    {
+                        "name": "iCalUID",
+                        "in": "path",
+                        "description": "Id Evento",
+                        "required": false
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The start date must be greater than the end date"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "[Lista com eventos]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "google/events/show": {
+            "get": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Lista um evento",
+                "description": "A rota realiza a exibição de um evento expecifico",
+                "operationId": "showEvent",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": false
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "Id Evento",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No event id provided"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "[Objecto do evento]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/events/remove": {
+            "delete": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Deleta Credencial",
+                "description": "A rota realiza a deleção da credencial associada ao usuário",
+                "operationId": "removeEvent",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": false
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "Id Evento",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No event id provided"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Event removed successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/events/create": {
+            "post": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Cria um evento",
+                "description": "A rota realiza a criação de um evento na agenda do usuário conectado",
+                "operationId": "createEvent",
+                "requestBody": {
+                    "description": "User credentials config google",
+                    "required": true
+                },
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ops, check the data and try again"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Successfully created event"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Registro",
+                "description": "A rota realiza o cadastro de um usuário no banco e retorna o usuário criado com seu token de acesso",
+                "operationId": "register",
+                "requestBody": {
+                    "description": "User credentials register",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "PassWord123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User already exists"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login",
+                "description": "A rota realiza o login de um usuário retornando os dados usuário juntamente com seu token de acesso",
+                "operationId": "login",
+                "requestBody": {
+                    "description": "User credentials register",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "PassWord123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "401": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorised"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout",
+                "description": "A rota realiza o logout de um usuário previamente logado",
+                "operationId": "logout",
+                "responses": {
+                    "401": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorised"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "You have been successfully logged out"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BaseModel": {
+                "properties": {
+                    "created_at": {
+                        "description": "Initial creation timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    },
+                    "updated_at": {
+                        "description": "Last update timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    },
+                    "deleted_at": {
+                        "description": "Soft delete timestamp",
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    }
+                },
+                "type": "object"
+            },
+            "BaseTokenGoogle": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "1"
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "Google"
+                    },
+                    "abilities": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": [
+                                "hability 1",
+                                "hability 2"
+                            ]
+                        },
+                        "collectionFormat": "multi",
+                        "readOnly": "true"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    },
+                    "tokenable_id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "2"
+                    },
+                    "tokenable_type": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "App\\\\Models\\\\User"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": "true"
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "BaseTokenGoogle"
+                }
+            },
+            "GoogleColors": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "1"
+                    },
+                    "google_color_id": {
+                        "description": "Color identifier used by google",
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "1"
+                    },
+                    "background": {
+                        "description": "Color Haxadecimal",
+                        "type": "string",
+                        "readOnly": "true"
+                    },
+                    "foreground": {
+                        "description": "Color Haxadecimal",
+                        "type": "string",
+                        "readOnly": "true"
+                    },
+                    "description": {
+                        "description": "Description of the color entered by the user",
+                        "type": "string",
+                        "readOnly": "true"
+                    },
+                    "status": {
+                        "description": "Status that the color represents",
+                        "type": "string",
+                        "readOnly": "true"
+                    },
+                    "created_by": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/created_at"
+                    },
+                    "updated_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/updated_at"
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "GoogleColors"
+                }
+            },
+            "GoogleCredentials": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "1"
+                    },
+                    "google_calendar_id": {
+                        "type": "text",
+                        "readOnly": "true"
+                    },
+                    "google_client_id": {
+                        "type": "text",
+                        "readOnly": "true"
+                    },
+                    "google_client_secret": {
+                        "type": "text",
+                        "readOnly": "true"
+                    },
+                    "google_redirect_uri": {
+                        "description": "Redirection route evoked by google on Oauth2 login",
+                        "type": "text",
+                        "readOnly": "true"
+                    },
+                    "google_webhook_uri": {
+                        "description": "Redirection route evoked by when there is a change in the event",
+                        "type": "text",
+                        "readOnly": "true"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "created_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/created_at"
+                    },
+                    "updated_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/updated_at"
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "GoogleCredentials"
+                }
+            },
+            "User": {
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": "1"
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "John Due"
+                    },
+                    "email": {
+                        "description": "User unique email address",
+                        "type": "string",
+                        "format": "email",
+                        "readOnly": "true",
+                        "example": "user@gmail.com"
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "1051527092716338246212"
+                    },
+                    "provider_name": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "google"
+                    },
+                    "google_access_token_json": {
+                        "type": "string",
+                        "readOnly": "true"
+                    },
+                    "created_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/created_at"
+                    },
+                    "updated_at": {
+                        "$ref": "#/components/schemas/BaseModel/properties/updated_at"
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "User"
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}

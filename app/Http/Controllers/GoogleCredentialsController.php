@@ -10,6 +10,72 @@ use Illuminate\Http\Request;
 
 class GoogleCredentialsController extends Controller
 {
+    /**
+     * @OA\Post(
+     *  path="api/google/credentials/register-key",
+     *  tags={"Credentials Google"},
+     *  summary="Cria credenciais de configuração",
+     *  description="A rota realiza a criação de credenciais de configurações da integração",
+     *  operationId="createCredential",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\RequestBody(
+     *   required=true,
+     *   description="User credentials config google",
+     *   @OA\JsonContent(
+     *      @OA\Property(
+     *        property="google_calendar_id", 
+     *        type="string", 
+     *        example=""
+     *      ),
+     *      @OA\Property(
+     *        property="google_client_id", 
+     *        type="string", 
+     *        example=""
+     *      ),
+     *      @OA\Property(
+     *        property="google_client_secret", 
+     *        type="string", 
+     *        example=""
+     *      ),
+     *      @OA\Property(
+     *        property="google_redirect_uri", 
+     *        type="string", 
+     *        example=""
+     *      ),
+     *      @OA\Property(
+     *        property="google_webhook_uri", 
+     *        type="string", 
+     *        example=""
+     *      ),
+     *    )
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *      property="message", 
+     *      type="string", 
+     *      example="Invalid credentials"
+     *     )
+     *   ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *    @OA\Property(
+     *      property="user",
+     *      ref="#/components/schemas/User"
+     *    ),
+     *    @OA\Property(
+     *      property="credential",
+     *      ref="#/components/schemas/GoogleCredentials"
+     *    )
+     *   ),
+     *  ),
+     * )
+     */
     public function createCredential(Request $request): JsonResponse
     {
         $user = User::where('id', auth()->user()->id)->first();
@@ -35,6 +101,32 @@ class GoogleCredentialsController extends Controller
         ], 200, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Get(
+     *  path="api/google/credentials/list-keys",
+     *  tags={"Credentials Google"},
+     *  summary="Lista Credenciais",
+     *  description="A rota realiza a listagem de credenciais associados ao usuário conectado",
+     *  operationId="listCredentials",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Response(
+     *   response=204,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *      property="message", 
+     *      type="string", 
+     *      example="Ops, no credentials registered"
+     *     )
+     *   ),
+     *  ),
+     *  @OA\Response(
+     *    response=200,
+     *    description="Success",
+     *    @OA\JsonContent(ref="#/components/schemas/GoogleCredentials"),
+     *   )
+     * )
+     */
     public function listCredentials(Request $request): JsonResponse
     {
         $credentials = GoogleCredentials::with('user:id,name,email,provider_id')
@@ -53,13 +145,66 @@ class GoogleCredentialsController extends Controller
         return response()->json(['credentials' => $credentials], 200, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Put(
+     *  path="api/google/credentials/update-key",
+     *  tags={"Credentials Google"},
+     *  summary="Atualiza Credencial",
+     *  description="A rota realiza a atualização da credencial associada ao usuário",
+     *  operationId="updateCredential",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=true
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="Please enter credentialId"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=500,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="Ops, an error occurred when performing the update"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="Credential successfully updated"
+     *     ),
+     *     @OA\Property(
+     *        property="color",
+     *        ref="#/components/schemas/GoogleCredentials"
+     *     )
+     *    ),
+     *   )
+     * )
+     */
     public function updateCredential(Request $request): JsonResponse
     {
 
         if (empty($request->credentialId)) {
             return response()->json([
                 'message' => 'Please enter credentialId'
-            ]);
+            ], 400);
         }
 
         if (!$credential = GoogleCredentials::where(['id' => $request->credentialId])->first()) {
@@ -99,6 +244,55 @@ class GoogleCredentialsController extends Controller
         ], 201, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Delete(
+     *  path="google/credentials/delete-key",
+     *  tags={"Credentials Google"},
+     *  summary="Deleta Credencial",
+     *  description="A rota realiza a deleção da credencial associada ao usuário",
+     *  operationId="deleteCredential",
+     *  security={ {"bearerAuth": {} }},
+     *  @OA\Parameter(
+     *   description="Id da credencial",
+     *   in="path",
+     *   name="credentialId",
+     *   required=true
+     *  ),
+     *  @OA\Response(
+     *   response=400,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="Please enter credentialId"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=500,
+     *   description="Error",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *       property="message", 
+     *       type="string", 
+     *       example="The credential reported does not exist"
+     *     )
+     *    ),
+     *  ),
+     *  @OA\Response(
+     *   response=200,
+     *   description="Success",
+     *   @OA\JsonContent(
+     *     @OA\Property(
+     *        property="message", 
+     *        type="string", 
+     *        example="Credential successfully deleted"
+     *     ),
+     *    ),
+     *   )
+     * )
+     */
     public function deleteCredential(Request $request): JsonResponse
     {
         if (empty($request->credentialId)) {
