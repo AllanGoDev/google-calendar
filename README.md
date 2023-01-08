@@ -127,4 +127,4 @@ Realizado o download renomeie o arquivo para “config.json“ e o coloque na ra
 
 Com o projeto rodando acesse.
 
-[http://localhost:8080/api/doc/#/Eventos/createEvent](http://localhost:880/api/doc/#/Eventos/createEvent)
+[http://localhost:8080/api/doc/](http://localhost:880/api/doc/)
