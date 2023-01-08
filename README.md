@@ -132,4 +132,5 @@ Com o projeto rodando acesse.
 ---
 # Documentações
 ---
-[https://developers.google.com/calendar/api/v3/reference/events](Documentação Google Claendar)
+(Documentação Google Calendar)
+[https://developers.google.com/calendar/api/v3/reference/events](https://developers.google.com/calendar/api/v3/reference/events)
