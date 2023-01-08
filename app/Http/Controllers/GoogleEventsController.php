@@ -294,7 +294,12 @@ class GoogleEventsController extends Controller
      *  security={ {"bearerAuth": {} }},
      *  @OA\RequestBody(
      *   required=true,
-     *   description="User credentials config google",
+     *   description="Dados do evento",
+     *   @OA\JsonContent(),
+     *   @OA\MediaType(
+     *    mediaType="application/xml",
+     *    @OA\Schema(type="object", ref="#/components/schemas/BaseEvent"),
+     *   ),
      *  ),
      *  @OA\Response(
      *   response=400,
@@ -367,7 +372,7 @@ class GoogleEventsController extends Controller
      *  tags={"Eventos"},
      *  summary="Atualiza um evento",
      *  description="A rota realiza a criação de credenciais de configurações da integração",
-     *  operationId="createCredential",
+     *  operationId="updateEvent",
      *  security={ {"bearerAuth": {} }},
      *  @OA\Parameter(
      *   description="Id da credencial",
@@ -384,6 +389,12 @@ class GoogleEventsController extends Controller
      * @OA\RequestBody(
      *   required=true,
      *   description="User credentials config google",
+     *   description="Dados do evento",
+     *   @OA\JsonContent(),
+     *    @OA\MediaType(
+     *     mediaType="application/xml",
+     *     @OA\Schema(type="object", ref="#/components/schemas/BaseEvent"),
+     *   ),
      *  ),
      *  @OA\Response(
      *   response=400,

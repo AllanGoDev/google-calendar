@@ -797,8 +797,18 @@
                 "description": "A rota realiza a criação de um evento na agenda do usuário conectado",
                 "operationId": "createEvent",
                 "requestBody": {
-                    "description": "User credentials config google",
-                    "required": true
+                    "description": "Dados do evento",
+                    "required": true,
+                    "content": {
+                        "application/xml": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BaseEvent"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {}
+                        }
+                    }
                 },
                 "responses": {
                     "400": {
@@ -826,6 +836,83 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Successfully created event"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/google/events/update": {
+            "put": {
+                "tags": [
+                    "Eventos"
+                ],
+                "summary": "Atualiza um evento",
+                "description": "A rota realiza a criação de credenciais de configurações da integração",
+                "operationId": "updateEvent",
+                "parameters": [
+                    {
+                        "name": "credentialId",
+                        "in": "path",
+                        "description": "Id da credencial",
+                        "required": false
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "Id do evento",
+                        "required": false
+                    }
+                ],
+                "requestBody": {
+                    "description": "Dados do evento",
+                    "required": true,
+                    "content": {
+                        "application/xml": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BaseEvent"
+                            }
+                        },
+                        "application/json": {
+                            "schema": {}
+                        }
+                    }
+                },
+                "responses": {
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No event id provided"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "successfully updated event"
                                         }
                                     },
                                     "type": "object"
@@ -1044,6 +1131,125 @@
     },
     "components": {
         "schemas": {
+            "BaseEvent": {
+                "properties": {
+                    "summary": {
+                        "type": "string",
+                        "readOnly": "false",
+                        "example": "Titulo do Evento"
+                    },
+                    "location": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "São Paulo, SP, Brasil"
+                    },
+                    "description": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "Aqui podemos inserir uma boa descrição"
+                    },
+                    "status": {
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "confirmed"
+                    },
+                    "start": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "dateTime": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2022-12-31T18:00:00-07:00"
+                                },
+                                "timeZone": {
+                                    "type": "string",
+                                    "example": "America/Sao_Paulo"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "readOnly": "true"
+                    },
+                    "end": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "dateTime": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "example": "2023-01-01T18:00:00-07:00"
+                                },
+                                "timeZone": {
+                                    "type": "string",
+                                    "example": "America/Sao_Paulo"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "readOnly": "true"
+                    },
+                    "recurrence": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": [
+                                "RRULE:FREQ=DAILY;COUNT=2"
+                            ]
+                        },
+                        "readOnly": "true"
+                    },
+                    "attendees": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "email": {
+                                    "type": "string",
+                                    "format": "email",
+                                    "example": "lpage@example.com"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "readOnly": "true"
+                    },
+                    "reminders": {
+                        "type": "array",
+                        "items": {
+                            "properties": {
+                                "useDefault": {
+                                    "type": "boolean",
+                                    "readOnly": "true",
+                                    "example": "true"
+                                },
+                                "overrides": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "method": {
+                                                "type": "string",
+                                                "example": "email"
+                                            },
+                                            "minutes": {
+                                                "type": "integer",
+                                                "example": "1500"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "readOnly": "true"
+                                }
+                            },
+                            "type": "object"
+                        },
+                        "readOnly": "true"
+                    }
+                },
+                "type": "object",
+                "xml": {
+                    "name": "BaseEvent"
+                }
+            },
             "BaseModel": {
                 "properties": {
                     "created_at": {
