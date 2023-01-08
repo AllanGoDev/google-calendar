@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [PassportAuthController::class, 'register']);
 Route::post('/login', [PassportAuthController::class, 'login']);
-Route::post('/logout', [PassportAuthController::class, 'logout']);
 
 /** Login Oauth */
 Route::get('google/oauth', [GoogleAccountController::class, 'getAuth']);
@@ -51,4 +50,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
     Route::get('google/colors/list', [GoogleColorsController::class, 'listColors']);
     Route::put('google/colors/update', [GoogleColorsController::class, 'updateColors']);
+
+    Route::post('/logout', [PassportAuthController::class, 'logout']);
 });
