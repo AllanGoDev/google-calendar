@@ -128,3 +128,8 @@ Realizado o download renomeie o arquivo para “config.json“ e o coloque na ra
 Com o projeto rodando acesse.
 
 [http://localhost:8080/api/doc/](http://localhost:880/api/doc/)
+
+---
+# Documentações
+---
+[https://developers.google.com/calendar/api/v3/reference/events](Documentação Google Claendar)
