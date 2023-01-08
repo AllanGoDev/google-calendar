@@ -21,6 +21,27 @@ class GoogleAccountController extends Controller
         $this->googleClient = new GoogleClient();
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/google/login/url",
+     *     tags={"Login Oauth"},
+     *     summary="Pegar url de login do oauth",
+     *     description="A rota realiza a geração de uma url utilizada para autenticar com oauth",
+     *     operationId="getAuthUrl",
+     *      @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="url", 
+     *              type="string", 
+     *              example="https://accounts.google.com/o/oauth2/v2/auth?"
+     *          ) 
+     *         ),
+     *     )
+     * )
+     */
+
     public function getAuthUrl(Request $request): JsonResponse
     {
 
@@ -33,8 +54,45 @@ class GoogleAccountController extends Controller
         ], 200, [], JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * @OA\Post(
+     *     path="google/auth/login",
+     *     tags={"Login Oauth"},
+     *     summary="Salvar credenciais de acesso oauth",
+     *     description="A rota salva as credenciais de acesso necessários para a comunicação com a google",
+     *     operationId="getAuth",
+     *     @OA\Parameter(
+     *       description="Codigo obtido no login realizado a partir da obtenção da url de login na rota /api/google/login/url",
+     *       in="path",
+     *       name="code",
+     *       required=true
+     *     ),
+     *      @OA\Response(
+     *         response=400,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="Please enter the code"
+     *          )
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(ref="#/components/schemas/BaseTokenGoogle"),
+     *     )
+     * )
+     */
     public function getAuth(Request $request): JsonResponse
     {
+        if (empty($request->input('code'))) {
+            return response()->json([
+                'message' => 'Please enter the code'
+            ], 400, [], JSON_UNESCAPED_SLASHES);
+        }
+
         $authCode = urldecode($request->input('code'));
 
         $client = $this->googleClient->getClient();

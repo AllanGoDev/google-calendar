@@ -10,7 +10,64 @@ use Illuminate\Support\Facades\Hash;
 
 class PassportAuthController extends Controller
 {
-    /** Registration */
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     tags={"Auth"},
+     *     summary="Registro",
+     *     description="A rota realiza o cadastro de um usuário no banco e retorna o usuário criado com seu token de acesso",
+     *     operationId="register",
+     *     @OA\RequestBody(
+     *      required=true,
+     *      description="User credentials register",
+     *      @OA\JsonContent(
+     *          required={"name", "email", "password"},
+     *          @OA\Property(
+     *              property="name", 
+     *              type="string", 
+     *              example="John Doe"
+     *          ),
+     *          @OA\Property(
+     *              property="email", 
+     *              type="string", 
+     *              format="email",
+     *              example="user@gmail.com"
+     *          ),
+     *          @OA\Property(
+     *              property="password", 
+     *              type="string", 
+     *              format="password", 
+     *              example="PassWord123456"
+     *          ),
+     *      ),
+     *     ),
+     *    @OA\Response(
+     *         response=400,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="User already exists"
+     *          )
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *              @OA\Property(
+     *                  property="user",
+     *                  ref="#/components/schemas/User"
+     *              ),
+     *              @OA\Property(
+     *                  property="token",
+     *                  type="string",
+     *              )
+     *          ),
+     *     )
+     * )
+     */
     public function register(Request $request): JsonResponse
     {
         $this->validate($request, [
@@ -20,7 +77,7 @@ class PassportAuthController extends Controller
         ]);
 
         if ($user = User::where(['email' => $request->email])->first()) {
-            return response()->json(['message' => 'User already exists']);
+            return response()->json(['message' => 'User already exists'], 400);
         }
 
         $user = User::create([
@@ -36,7 +93,57 @@ class PassportAuthController extends Controller
 
 
     /**
-     * Login
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Auth"},
+     *     summary="Login",
+     *     description="A rota realiza o login de um usuário retornando os dados usuário juntamente com seu token de acesso",
+     *     operationId="login",
+     *     @OA\RequestBody(
+     *          required=true,
+     *          description="User credentials register",
+     *          @OA\JsonContent(
+     *              required={"email", "password"},
+     *              @OA\Property(
+     *                  property="email", 
+     *                  type="string", 
+     *                  format="email",
+     *                  example="user@gmail.com"
+     *              ),
+     *              @OA\Property(
+     *                  property="password", 
+     *                  type="string", 
+     *                  format="password", 
+     *                  example="PassWord123456"
+     *              ),
+     *          ),
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="Unauthorised"
+     *          )
+     *         ),
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *           @OA\Property(
+     *               property="user",
+     *               ref="#/components/schemas/User"
+     *           ),
+     *           @OA\Property(
+     *               property="token",
+     *               type="string",
+     *           )
+     *         ),
+     *     )
+     * )
      */
     public function login(Request $request): JsonResponse
     {
@@ -53,9 +160,45 @@ class PassportAuthController extends Controller
         }
     }
 
-    /**Logout */
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     tags={"Auth"},
+     *     summary="Logout",
+     *     description="A rota realiza o logout de um usuário previamente logado",
+     *     operationId="logout",
+     *     security={ {"bearerAuth": {} }},
+     *     @OA\Response(
+     *         response=401,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="Unauthorised"
+     *          )
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *           @OA\Property(
+     *             property="message", 
+     *             type="string", 
+     *             example="You have been successfully logged out"
+     *          )
+     *         ),
+     *     )
+     * ) 
+     * 
+     */
     public function logout(Request $request)
     {
+        if (empty(auth()->user())) {
+            return response()->json(['message' => 'Unauthorised'], 401);
+        }
+
         $token = $request->user()->token();
         $token->revoke();
         $response = [
