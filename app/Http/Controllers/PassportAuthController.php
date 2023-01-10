@@ -206,4 +206,111 @@ class PassportAuthController extends Controller
         ];
         return response($response, 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/user",
+     *     tags={"Auth"},
+     *     summary="Show User",
+     *     description="A rota realiza a listagem do usuário baseado no token",
+     *     operationId="show",
+     *     security={ {"bearerAuth": {} }},
+     *     @OA\Response(
+     *         response=401,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="Unauthorised"
+     *          )
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *               property="user",
+     *               ref="#/components/schemas/User"
+     *           ),
+     *         ),
+     *     )
+     * ) 
+     * 
+     */
+
+    public function show(Request $request)
+    {
+        if (empty(auth()->user())) {
+            return response()->json(['message' => 'Unauthorised'], 401);
+        }
+
+        return response()->json(auth()->user(), 200);
+    }
+
+    /**
+     * @OA\Put(
+     *     path="/api/reset",
+     *     tags={"Auth"},
+     *     summary="Update password",
+     *     description="A rota realiza a atualização da senha do usuário logado",
+     *     operationId="resetPassword",
+     *     security={ {"bearerAuth": {} }},
+     *     @OA\RequestBody(
+     *       required=true,
+     *       description="User password updated",
+     *       @OA\JsonContent(
+     *         required={"password"},
+     *         @OA\Property(
+     *           property="password", 
+     *           type="string", 
+     *           format="password", 
+     *           example="PassWord123456"
+     *         ),
+     *       ),
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Error",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *              property="message", 
+     *              type="string", 
+     *              example="Unauthorised"
+     *          )
+     *         ),
+     *     ),
+     *      @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *          @OA\Property(
+     *            property="message",
+     *            type="string", 
+     *            example="Successed user updated"
+     *          ),
+     *        ),
+     *     )
+     * ) 
+     * 
+     */
+    public function resetPassword(Request $request)
+    {
+        $this->validate($request, [
+            'password' => 'required|min:8',
+        ]);
+
+        if (empty(auth()->user())) {
+            return response()->json(['message' => 'Unauthorised'], 401);
+        }
+
+        if (!$user = User::where(['id' => auth()->user()->id])->first()) {
+            return response()->json(['message' => 'This user is not exists'], 400);
+        }
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Successed user updated'], 200);
+    }
 }

@@ -52,4 +52,6 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::put('google/colors/update', [GoogleColorsController::class, 'updateColors']);
 
     Route::post('/logout', [PassportAuthController::class, 'logout']);
+    Route::get('/user', [PassportAuthController::class, 'show']);
+    Route::put('/reset', [PassportAuthController::class, 'resetPassword']);
 });

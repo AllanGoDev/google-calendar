@@ -106,16 +106,15 @@ class GoogleAccountController extends Controller
         $userFromGoogle = $service->userinfo->get();
 
         $user = User::where('email', '=', $userFromGoogle->email)
-            ->where('provider_id', '=', $userFromGoogle->id)
             ->first();
 
         if (!$user) {
             $user = User::create([
-                'provider_id' => $userFromGoogle->id,
+                'provider_id' => @$userFromGoogle->id,
                 'provider_name' => 'google',
                 'google_access_token_json' => json_encode($accessToken),
-                'name' => $userFromGoogle->name,
-                'email' => $userFromGoogle->email
+                'name' => @$userFromGoogle->name,
+                'email' => @$userFromGoogle->email
             ]);
         } else {
             $user->google_access_token_json = json_encode($accessToken);
