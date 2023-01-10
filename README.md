@@ -59,6 +59,10 @@ Gere a key do projeto Laravel
 php artisan key:generate
 ```
 
+Gere as chaves do passport
+```sh
+php artisan passport:install
+```
 
 Acesse o projeto
 [http://localhost:8080](http://localhost:8080)
