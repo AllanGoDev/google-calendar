@@ -7,6 +7,8 @@ php artisan migrate
 
 php artisan passport:install
 
+chown -R www-data:www-data storage
+
 echo "Execute main:"
 docker-php-entrypoint $@
 echo "Main Done"
