@@ -5,8 +5,9 @@ services:
     app:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.dev
         # image: allanmilani/google-calendar-app
+        entrypoint: dockerize -wait tcp://mysql:3306 -timeout 120s docker-entrypoint.sh
         restart: unless-stopped
         working_dir: /var/www/
         volumes:
