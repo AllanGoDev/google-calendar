@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class GoogleAccountController extends Controller
 {
@@ -114,7 +115,8 @@ class GoogleAccountController extends Controller
                 'provider_name' => 'google',
                 'google_access_token_json' => json_encode($accessToken),
                 'name' => @$userFromGoogle->name,
-                'email' => @$userFromGoogle->email
+                'email' => @$userFromGoogle->email,
+                'password' => bcrypt(Str::random(10))
             ]);
         } else {
             $user->google_access_token_json = json_encode($accessToken);
@@ -123,6 +125,7 @@ class GoogleAccountController extends Controller
 
         $token = $user->createToken("Google")->accessToken;
         return response()->json([
+            'user' => $user,
             'token' => $token
         ], 201);
     }
