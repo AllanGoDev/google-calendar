@@ -138,3 +138,21 @@ Com o projeto rodando acesse.
 ---
 (Documentação Google Calendar)
 [https://developers.google.com/calendar/api/v3/reference/events](https://developers.google.com/calendar/api/v3/reference/events)
+
+---
+# Fluxograma de utilização
+---
+
+![fluxograma.png](Criac%CC%A7a%CC%83o%20da%20chave%20Google%20180e7f6cd18c42b18870fd88a2f13872/fluxograma.png)
+
+Para utilizar a aplicação o seguinte fluxo seve ser mantido.
+
+O primeiro passo para utilizar é a relização do login Oauth2 do google, para isso utilize a rota de /url para obter uma url de login;
+
+Obtido a rota será aberto a tela de autenticação do google onde o usuário deverá autorizar o acesso em seu dados;
+
+Com isso, caso o usuário já esteja cadastrado na aplicação basta copiar o token gerado e utilizalo nas demais rotas, caso o contrário a rota irá cadastrar o usuário e informar o token para a utilização, é aconselhavel que após o registro a senha sejá alterada para maior segurança;
+
+Após o registro utilize o token gerado para realizar o cadastros das credenciais do google como o id do calendário onde a aplicação realizará o acesso;
+
+Com as credenciais basta escolher qual o serviço será utilzado, como o de cores que é responsável por criar um indice de consulta para as cores do evento ou o serviço de eventos que realiza a manipulação da agenda.
