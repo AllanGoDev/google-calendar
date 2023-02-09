@@ -129,10 +129,16 @@ class GoogleCredentialsController extends Controller
      */
     public function listCredentials(Request $request): JsonResponse
     {
+        $where = [
+            'user_id' => auth()->user()->id
+        ];
+
+        if (!empty($request->GoogleCalendarId)) {
+            $where['google_calendar_id'] = $request->GoogleCalendarId;
+        }
+
         $credentials = GoogleCredentials::with('user:id,name,email,provider_id')
-            ->where([
-                'user_id' => auth()->user()->id
-            ])
+            ->where($where)
             ->get()
             ->toArray();
 
