@@ -136,10 +136,10 @@ class GoogleCredentialsController extends Controller
             ->get()
             ->toArray();
 
-        if (!$credentials) {
-            return response([
+        if (!$credentials || empty($credentials)) {
+            return response()->json([
                 'message' => 'Ops, no credentials registered'
-            ], 204);
+            ], 401);
         }
 
         return response()->json(['credentials' => $credentials], 200, [], JSON_UNESCAPED_SLASHES);
