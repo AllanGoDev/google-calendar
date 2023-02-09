@@ -117,6 +117,12 @@ class GoogleEventsController extends Controller
             ])->first();
         }
 
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
+        }
+
         $result = $service->events->listEvents(@$credential->google_calendar_id, $filters);
 
         return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
@@ -187,6 +193,12 @@ class GoogleEventsController extends Controller
             $credential = GoogleCredentials::where([
                 'user_id' => auth()->user()->id
             ])->first();
+        }
+
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
         }
 
         $result = $service->events->get(@$credential->google_calendar_id, $request->eventId);
@@ -271,6 +283,12 @@ class GoogleEventsController extends Controller
             ])->first();
         }
 
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
+        }
+
         try {
             $service->events->delete(@$credential->google_calendar_id, $request->eventId);
             return response()->json([
@@ -350,6 +368,12 @@ class GoogleEventsController extends Controller
             $credential = GoogleCredentials::where([
                 'user_id' => auth()->user()->id
             ])->first();
+        }
+
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
         }
 
         $result = $service->events->insert(@$credential->google_calendar_id, $event);
@@ -443,6 +467,12 @@ class GoogleEventsController extends Controller
             ])->first();
         }
 
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
+        }
+
         $eventData = $request->all();
 
         if (!empty($eventData['eventId'])) unset($eventData['eventId']);
@@ -522,6 +552,12 @@ class GoogleEventsController extends Controller
             $credential = GoogleCredentials::where([
                 'user_id' => auth()->user()->id
             ])->first();
+        }
+
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
         }
 
         $body = new \Google\Service\Calendar\Channel([
