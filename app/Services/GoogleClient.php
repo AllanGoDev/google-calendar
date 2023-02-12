@@ -14,18 +14,16 @@ class GoogleClient
 
     $client = new \Google_Client();
     $client->setApplicationName($applicationName);
-    $client->setAuthConfig($configJson);
-    $client->setAccessType('offline');
-    $client->setApprovalPrompt('force');
-
     $client->setScopes([
       \Google\Service\Oauth2::USERINFO_PROFILE,
       \Google\Service\Oauth2::USERINFO_EMAIL,
       \Google\Service\Oauth2::OPENID,
       \Google\Service\Calendar::CALENDAR,
     ]);
-
     $client->setIncludeGrantedScopes(true);
+    $client->setAuthConfig($configJson);
+    $client->setAccessType('offline');
+    $client->setApprovalPrompt('force');
     return $client;
   }
 
