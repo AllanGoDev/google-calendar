@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('google/events/create', [GoogleEventsController::class, 'createEvent']);
     Route::put('google/events/update', [GoogleEventsController::class, 'updateEvent']);
     Route::get('google/events/watch', [GoogleEventsController::class, 'watchEvent']);
+    Route::get('google/events/stop', [GoogleEventsController::class, 'stopEvent']);
 
     /** Cores */
     Route::get('google/colors/import', [GoogleColorsController::class, 'importColors']);
