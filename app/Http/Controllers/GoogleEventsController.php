@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class GoogleEventsController extends Controller
 {
@@ -123,9 +124,18 @@ class GoogleEventsController extends Controller
             ]);
         }
 
-        $result = $service->events->listEvents(@$credential->google_calendar_id, $filters);
+        try {
+            $result = $service->events->listEvents(@$credential->google_calendar_id, $filters);
 
-        return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
+            return response()->json($result->getItems(), 200, [], JSON_UNESCAPED_SLASHES);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
+
+            ], 500);
+        }
     }
 
     /**
@@ -201,9 +211,18 @@ class GoogleEventsController extends Controller
             ]);
         }
 
-        $result = $service->events->get(@$credential->google_calendar_id, $request->eventId);
+        try {
+            $result = $service->events->get(@$credential->google_calendar_id, $request->eventId);
 
-        return response()->json($result, 200, [], JSON_UNESCAPED_SLASHES);
+            return response()->json($result, 200, [], JSON_UNESCAPED_SLASHES);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
+
+            ], 500);
+        }
     }
 
     /**
@@ -294,11 +313,13 @@ class GoogleEventsController extends Controller
             return response()->json([
                 'message' => 'Event removed successfully'
             ], 201);
-        } catch (Exception $e) {
+        } catch (\Google\Service\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage(),
-                'stack' => $e->getTrace()
-            ], 500, [], JSON_UNESCAPED_SLASHES);
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
+
+            ], 500);
         }
     }
 
@@ -376,18 +397,27 @@ class GoogleEventsController extends Controller
             ]);
         }
 
-        $result = $service->events->insert(@$credential->google_calendar_id, $event);
+        try {
+            $result = $service->events->insert(@$credential->google_calendar_id, $event);
 
-        if (empty(@$result->htmlLink)) {
+            if (empty(@$result->htmlLink)) {
+                return response()->json([
+                    'message' => 'Ops, check the data and try again',
+                ], 400, [], JSON_UNESCAPED_SLASHES);
+            }
+
             return response()->json([
-                'message' => 'Ops, check the data and try again',
-            ], 400, [], JSON_UNESCAPED_SLASHES);
-        }
+                'message' => 'Successfully created event',
+                'event' => $result
+            ]);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
 
-        return response()->json([
-            'message' => 'Successfully created event',
-            'event' => $result
-        ]);
+            ], 500);
+        }
     }
 
     /**
@@ -517,18 +547,27 @@ class GoogleEventsController extends Controller
             $event->$set($dado);
         }
 
-        $eventUpdated = $service->events->update(@$credential->google_calendar_id, $event->getId(), $event);
+        try {
+            $eventUpdated = $service->events->update(@$credential->google_calendar_id, $event->getId(), $event);
 
-        if (empty(@$eventUpdated)) {
+            if (empty(@$eventUpdated)) {
+                return response()->json([
+                    'message' => 'Ops, check the data and try again',
+                ], 400, [], JSON_UNESCAPED_SLASHES);
+            }
+
             return response()->json([
-                'message' => 'Ops, check the data and try again',
-            ], 400, [], JSON_UNESCAPED_SLASHES);
-        }
+                'message' => 'successfully updated event',
+                'event' => $eventUpdated
+            ]);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
 
-        return response()->json([
-            'message' => 'successfully updated event',
-            'event' => $eventUpdated
-        ]);
+            ], 500);
+        }
     }
 
     public function watchEvent(Request $request): JsonResponse
@@ -563,21 +602,34 @@ class GoogleEventsController extends Controller
         $body = new \Google\Service\Calendar\Channel([
             'id' => $request->eventId,
             'type' => 'webhook',
-            'address' => !(empty($request->googleWebhookUri)) ? $request->googleWebhookUri : @$credential->google_webhook_uri
+            'address' => !(empty($request->googleWebhookUri)) ? $request->googleWebhookUri : @$credential->google_webhook_uri,
+            'params' => array(
+                'q' => 'id:' . $request->eventId
+            )
         ]);
 
-        $result = $service->events->watch(@$credential->google_calendar_id, $body);
+        try {
+            $result = $service->events->watch(@$credential->google_calendar_id, $body);
 
-        if (!$result) {
+            if (!$result) {
+                return response()->json([
+                    'message' => 'Ops, an unexpected error occurred, please try again'
+                ], 500);
+            }
+
             return response()->json([
-                'message' => 'Ops, an unexpected error occurred, please try again'
+                'message' => 'Event watch created successfully',
+                'result' => $result,
+                'expiration' => $result->getExpiration()
+            ], 200);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
+
             ], 500);
         }
-
-        return response()->json([
-            'message' => 'Event watch created successfully',
-            'result' => $result
-        ], 200);
     }
 
     public function webhookEvent(Request $request)
@@ -602,5 +654,54 @@ class GoogleEventsController extends Controller
         return response()->json([
             'message' => 'Webhook event created successfully',
         ], 200);
+    }
+
+    public function stopEvent(Request $request): JsonResponse
+    {
+        if (empty($request->eventId)) {
+            return response()->json([
+                'message' => 'No event id provided'
+            ], 400);
+        }
+
+        $client = $this->googleClient->getUserClient();
+
+        $service = new \Google\Service\Calendar($client);
+
+        if (!empty($request->only('credentialId'))) {
+            $credential = GoogleCredentials::where([
+                'id' => $request->only('credentialId'),
+                'user_id' => auth()->user()->id
+            ])->first();
+        } else {
+            $credential = GoogleCredentials::where([
+                'user_id' => auth()->user()->id
+            ])->first();
+        }
+
+        if (empty($credential)) {
+            return response()->json([
+                'message' => 'Please, enter your google credentials'
+            ]);
+        }
+
+        try {
+            $body = new \Google\Service\Calendar\Channel([
+                'id' => $request->eventId,
+                'resourceId' => $request->resourceId
+            ]);
+            $service->channels->stop($body);
+
+            return response()->json([
+                'message' => 'Event stop watch successfully'
+            ], 200);
+        } catch (\Google\Service\Exception $e) {
+            return response()->json([
+                'message' => 'Ops, an unexpected error occurred, please try again',
+                'stack' => json_decode($e->getMessage(), true),
+                'error' => $e->getTrace()
+
+            ], 500);
+        }
     }
 }
