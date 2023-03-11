@@ -604,7 +604,7 @@ class GoogleEventsController extends Controller
             'type' => 'webhook',
             'address' => !(empty($request->googleWebhookUri)) ? $request->googleWebhookUri : @$credential->google_webhook_uri,
             'params' => array(
-                'q' => 'id:' . $request->eventId
+                'q' => $request->eventId
             )
         ]);
 
