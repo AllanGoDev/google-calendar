@@ -89,9 +89,9 @@ class GoogleCredentialsController extends Controller
         $googleCredential = GoogleCredentials::create([
             'google_calendar_id' => @$request->googleCalendarId ?: null,
             'google_client_id' => @$request->googleClientId ?: null,
-            'google_client_secret' => @$request->googleRedirectUri ?: null,
-            'google_redirect_uri' => @$request->googleWebhookUri ?: null,
-            'google_webhook_uri' => @$request->googleClientSecret ?: null,
+            'google_client_secret' => @$request->googleClientSecret ?: null,
+            'google_redirect_uri' => @$request->googleRedirectUri ?: null,
+            'google_webhook_uri' => @$request->googleWebhookUri ?: null,
             'user_id' => $user->id
         ]);
 
@@ -229,13 +229,14 @@ class GoogleCredentialsController extends Controller
             $aUpdated['google_client_id'] = $aDados['googleClientId'];
 
         if (!empty($aDados['googleRedirectUri']))
-            $aUpdated['google_client_secret'] = $aDados['googleRedirectUri'];
+            $aUpdated['google_redirect_uri'] = $aDados['googleRedirectUri'];
 
         if (!empty($aDados['googleWebhookUri']))
-            $aUpdated['google_redirect_uri'] = $aDados['googleWebhookUri'];
+            $aUpdated['google_webhook_uri'] = $aDados['googleWebhookUri'];
 
         if (!empty($aDados['googleClientSecret']))
-            $aUpdated['google_webhook_uri'] = $aDados['googleClientSecret'];
+            $aUpdated['google_client_secret'] = $aDados['googleClientSecret'];
+
 
         $credentialUpdated = $credential->updateOrCreate(
             [
