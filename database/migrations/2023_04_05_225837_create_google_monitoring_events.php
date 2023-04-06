@@ -13,21 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('google_credentials', function (Blueprint $table) {
+        Schema::create('google_monitoring_events', function (Blueprint $table) {
             $table->id();
-            $table->text('google_calendar_id')->nullable();
-            $table->text('google_client_id')->nullable();
-            $table->text('google_client_secret')->nullable();
-            $table->text('google_redirect_uri')->nullable();
-            $table->text('google_webhook_uri')->nullable();
+            $table->string('event_id');
+            $table->string('resource_id');
+            $table->boolean('monitoring');
             $table->bigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
-
-        // Schema::table('google_credentials', function ($table) {
-        //     $table->foreign('user_id')->references('id')->on('users');
-        // });
     }
 
     /**
@@ -37,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('google_credentials');
+        Schema::dropIfExists('google_monitoring_events');
     }
 };
