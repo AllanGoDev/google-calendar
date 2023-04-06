@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoogleCredentials;
+use App\Models\GoogleMonitoringEvents;
 use App\Models\Log;
 use App\Services\GoogleClient;
 use DateTime;
@@ -608,6 +609,18 @@ class GoogleEventsController extends Controller
             )
         ]);
 
+        $eventMonitoring = GoogleMonitoringEvents::where([
+            'user_id' => auth()->user()->id,
+            'event_id' => $request->eventId,
+            'monitoring' => true
+        ])->first();
+
+        if (!empty($eventMonitoring)) {
+            return response()->json([
+                'message' => 'Event has watch monitoring',
+            ], 200);
+        }
+
         try {
             $result = $service->events->watch(@$credential->google_calendar_id, $body);
 
@@ -616,6 +629,20 @@ class GoogleEventsController extends Controller
                     'message' => 'Ops, an unexpected error occurred, please try again'
                 ], 500);
             }
+
+            GoogleMonitoringEvents::updateOrCreate(
+                [
+                    'event_id' => $request->eventId,
+                    'resource_id' => $result->resourceId,
+                    'user_id' => auth()->user()->id
+                ],
+                [
+                    'event_id' => $request->eventId,
+                    'resource_id' => $result->resourceId,
+                    'monitoring' => true,
+                    'user_id' => auth()->user()->id
+                ]
+            );
 
             return response()->json([
                 'message' => 'Event watch created successfully',
@@ -685,12 +712,29 @@ class GoogleEventsController extends Controller
             ]);
         }
 
+        $resourceId = @$request->resourceId;
+        if (empty($resourceId)) {
+            $eventMonitoring = GoogleMonitoringEvents::where([
+                'user_id' => auth()->user()->id,
+                'event_id' => $request->eventId,
+                'monitoring' => true
+            ])->first();
+
+            $resourceId = $eventMonitoring->resource_id;
+        }
+
         try {
             $body = new \Google\Service\Calendar\Channel([
                 'id' => $request->eventId,
-                'resourceId' => $request->resourceId
+                'resourceId' => $resourceId
             ]);
+
             $service->channels->stop($body);
+
+            GoogleMonitoringEvents::where([
+                'event_id' => $request->eventId,
+                'user_id' => auth()->user()->id
+            ])->update(['monitoring' => false]);
 
             return response()->json([
                 'message' => 'Event stop watch successfully'
